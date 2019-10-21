@@ -19,7 +19,7 @@
 #define numbino 22
 #define constSyn 99
 #define liberSyn 100
-#define lenToken 20
+#define lenToken 25
 #define numID 1000
 
 using namespace std;
@@ -176,7 +176,7 @@ bool checkLetter(char resourceProj[],char token[],int &cur,int &count,int &syn){
     else if(resourceProj[cur]=='@'){
         token[count++]=resourceProj[cur];
         cur++;
-        while (resourceProj[cur] != ' '&& resourceProj[cur] !='\n') {
+        while (resourceProj[cur] != 'p'&& resourceProj[cur] !='\n') {
             token[count++]=resourceProj[cur];
             cur++;
         }
@@ -434,11 +434,13 @@ void lexer(int &syn,char resourceProj[],char token[],int &cur,FILE *fp){
     int a=0;
     char ch;
     ch = resourceProj[cur];
+    
     while (ch == ' ') {
 //        过滤空格
         cur++;
         ch = resourceProj[cur];
     }
+
 //        数组初始化
     for (i =0; i<lenToken; i++) {
         token[i] = '\0';
@@ -529,6 +531,10 @@ int main(int argc, const char * argv[]) {
         else if(syn>=51 && syn<=98)
         {
             printf("<%d,%s>\n",syn,token);
+        }
+        else if(syn ==101)
+        {
+            printf("<101,%s>\n",token);
         }
     }
     fclose(fp);
