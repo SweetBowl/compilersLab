@@ -13,26 +13,46 @@
 #include <stdlib.h>
 
 #define numChar 10000
+#define numKey 50
+#define nummono 13
+#define numspe 16
+#define numbino 22
+#define constSyn 102
+#define liberSyn 103
 
 using namespace std;
 
-const char keyword[50][13]={"abstract","assert","boolean","break","byte","case","catch","char",
+/**种别码
+ 1.关键字
+ 种别码从1开始，依次往后顺延至50
+ 2.非prefix的单目符
+ 种别码从51开始，依次往后顺延至63
+ 3.特殊单目符
+ 种别码从64开始编号，依次往后顺延至79
+ 4.多目符
+ 种别码从80开始编号，依次往后顺延至101
+ 5.常数
+ 种别码为102
+ 6.标识符
+ 种别码为103
+ */
+char keyword[50][13]={"abstract","assert","boolean","break","byte","case","catch","char",
     "class","const","continue","default","do","double","else","enum","extends","final",
     "finally","float","for","if","goto","implements","import","instanceof","int","interface",
     "long","native","new","package","private","protected","public","return","short","static",
     "strictfp","super","switch","synchronized","this","throw","throws","transient","try",
     "void","volatile","while"};
 
-const char monocularOperator[15]={'+','-','*','/','=','>','<','!','?',':','&','|','^','%','~'};
+const char monoOperator[13]={'(',')','[',']','{','}',';',',','.','?',':','^','~'};
 
-const char binocularOperator[22][5]={"==","<=",">=","!=","&&","||","++","--","<<",">>",">>>","+=","-=","*=",
-    "%=","/=","&=","|=","^=","<<=",">>=",">>>="};
+const char speOperator[16]={'=','<','>','+','-','!','*','%','/','&','|','^'};
 
-const char Delimiter[9]={'(',')','[',']','{','}',';',',','.'};
+const char binocularOperator[22][5]={"==","<=","<<=","<<",">=",">>",">>>",">>=",">>>=","+=","++","--","-=","!=","*=",
+    "%=","/=","&=","&&","|=","||","^=",};
 
 FILE* fileSource=NULL;
 
-/*判断是否为字母**/
+/**判断是否为字母*/
 bool isLetter(char letter)
 {
     if((letter >='a' && letter<='z') || (letter>='A'&&letter<='Z'))
@@ -45,7 +65,7 @@ bool isLetter(char letter)
     }
 }
 
-/*判断是否为数字**/
+/**判断是否为数字*/
 bool isDigit(char digit)
 {
     if(digit>='0'&&digit<='9')
@@ -58,7 +78,7 @@ bool isDigit(char digit)
     }
 }
 
-/*查找关键字**/
+/**查找关键字*/
 int searchKey(char keyword[][13],char s[])
 {
     for(int i=0;i<50;i++){
@@ -69,7 +89,7 @@ int searchKey(char keyword[][13],char s[])
     return -1;                          //查找不成功返回-1
 }
 
-/*读取程序文件内容到数组中**/
+/**读取程序文件内容到数组中*/
 int infoInit(char resourceProj[numChar]){
     
     FILE *fp;
@@ -96,7 +116,7 @@ int infoInit(char resourceProj[numChar]){
     return cur;
 }
 
-/*编译预处理**/
+/**编译预处理*/
 void filterPro(char ch[],int lenResource)
 {
     char temString[numChar];
@@ -126,6 +146,163 @@ void filterPro(char ch[],int lenResource)
     
     temString[count] ='\0';
     strcpy(ch, temString);
+}
+
+/**判断是否为标识符或关键字*/
+int checkLetter(char resourceProj[],char token[],int &cur,int &count){
+    int syn = -1;
+    if (isLetter(resourceProj[cur])|| resourceProj[cur] =='_' || resourceProj[cur]=='$') {
+        token[count++] = resourceProj[cur];
+        cur++;
+//        读取后面的字母或数字或特殊字符
+        while (isLetter(resourceProj[cur]) || isDigit(resourceProj[cur]) ||resourceProj[cur] =='_' ||resourceProj[cur] =='$') {
+            token[count++] =resourceProj[cur];
+            cur++;
+        }
+        token[count]='\0';
+//        判断是否为关键字
+        syn = searchKey(keyword, token);
+        if (syn == -1) {
+//            此单词为标识符
+            syn =liberSyn;
+        }
+    }
+    return syn;
+}
+
+/**判断是否为常数*/
+int checkDigit(char resourceProj[],char token[],int &cur,int &count){
+    int syn;
+    if (isDigit(resourceProj[cur])) {
+            while (isDigit(resourceProj[cur])) {
+            token[count++] = resourceProj[cur];
+            cur++;
+        }
+    }
+    token[count]='\0';
+    syn = constSyn;
+    return syn;
+}
+
+/**判断不是某bino的prefix的单目符*/
+//const char monoOperator[14]={'(',')','[',']','{','}',';',',','.','!','?',':','^','~'};
+int checkMono(char resourceProj[],char token[],int &cur,char ch){
+    int syn = -1;
+    if (ch =='('||ch==')'||ch=='['||ch==']'||ch=='{'||ch=='}'||ch==';'||ch==','||ch=='.'||ch=='!'
+        ||ch=='?'||ch==':'||ch=='^'||ch=='~') {
+        token[0] = resourceProj[cur];
+        token[1] = resourceProj[cur];
+        for (int i=0; i<nummono; i++) {
+            if (resourceProj[cur] == monoOperator[i]) {
+                syn = numKey+1+i;
+                break;
+            }
+        }
+        cur++;
+    }
+    return syn;
+}
+
+/**判断是否为多目符或是prefix的单目符*/
+//种别码：特殊的单目符从64开始编号，依次往后顺延至79
+//种别码：多目符从80开始编号，依次往后顺延至101
+
+//const char speOperator[16]={'=','<','>','+','-','!','*','%','/','&','|','^'};
+//const char binocularOperator[22][5]={"==","<=","<<","<<=",">=",">>",">>>",">>=",">>>=","+=","++","--","-=","!=","*=",
+//"%=","/=","&=","&&","|=","||","^=",};
+int checkBino(char resourceProj[],int &cur){
+    int syn=-1;
+    if (resourceProj[cur] == '=') {
+        //判断是否为 = 或者 ==
+        cur++;      //超前搜索
+        if (resourceProj[cur]=='=') {
+            syn = 80;
+        }
+        else{
+            cur--;  //回退
+            syn =64;
+        }
+        cur++;
+        return syn;
+    }
+    else if (resourceProj[cur]=='<') {
+        //判断是否为< 或者 <= 或者 << 或者 <<=
+        cur++;
+        if (resourceProj[cur]=='=') {
+            syn =81;
+        }
+        else if(resourceProj[cur] =='<'){
+            cur++;
+            if (resourceProj[cur]=='=') {
+                syn=83;
+            }
+            else
+            {
+                cur--;
+                syn=82;
+            }
+        }
+        else
+        {
+            cur--;
+            syn = 65;
+        }
+        cur++;
+        return syn;
+    }
+    else if(resourceProj[cur]=='>'){
+        //>, >=, >>, >>=, >>>, >>>=
+        cur++;
+        if (resourceProj[cur]=='=') {
+            syn=84;
+        }
+        else if(resourceProj[cur]=='>')
+        {
+            cur++;
+            if (resourceProj[cur]=='>') {
+                cur++;
+                if (resourceProj[cur]=='=') {
+                    syn=88;
+                }
+                else
+                {
+                    cur--;
+                    syn=86;
+                }
+            }
+            else if(resourceProj[cur]=='=')
+            {
+                syn=87;
+            }
+            else
+            {
+                cur--;
+                syn=85;
+            }
+        }
+        else
+        {
+            cur--;
+            syn=66;
+        }
+        cur++;
+        return syn;
+    }
+    else if(resourceProj[cur]=='+'){
+        cur++;
+        if (resourceProj[cur]=='=') {
+            syn=89;
+        }
+        else if(resourceProj[cur]== '+'){
+            syn = 90;
+        }
+        else{
+            cur--;
+            syn=67;
+        }
+        cur++;
+        return syn;
+    }
 }
 
 int main(int argc, const char * argv[]) {
