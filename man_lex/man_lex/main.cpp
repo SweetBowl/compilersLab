@@ -69,72 +69,15 @@ int searchKey(char keyword[][13],char s[])
     return -1;                          //查找不成功返回-1
 }
 
-/*检查程序文件是否存在或是否为空
- 
- 在最新的Xcode Version 11.0 (11A420a)下，此函数不能运行
- 
-bool checkNullFile(char const *fileName)
-{
-    FILE *fp = fopen(fileName, "rb");
-    printf("文件存在\n");
-    if (!fp) {
-        printf("程序文件不存在,将为您创建一个！\n");
-        FILE *fp=fopen(fileName, "wb");
-        fclose(fp);
-        return false;
-    }
-    else{
-        char tmp;
-        int res = fscanf(fp, "%c",&tmp);
-        fclose(fp);
-        if (res<=0) {
-            return false;
-        }
-        else
-            return true;
-    }
-}
-
-//读取程序文件内容//
-bool infoInit(char const *fileName,char resourceProj[numChar])
-{
-    FILE *fp;
-    int cur = 0;
-    bool res=checkNullFile(fileName);
-
-    //初始化数组
-    for (int j=0; j<numChar; j++) {
-        resourceProj[j]='\0';
-    }
-    
-    if ((fp=fopen(fileName, "rb"))==NULL) {
-        if ((fp=fopen(fileName, "wb"))==NULL) {
-            printf("错误，无法创建程序文件\n");
-        }
-    }
-    
-    else{
-        while (res&&feof(fp)) {
-            fscanf(fp,"%c", &resourceProj[cur]);
-            cur++;
-        }
-        resourceProj[cur]='\0';
-    }
-    fclose(fp);
-    printf("已读取文件内容到数组中\n");
-    return true;
-}
-*/
-
 /*读取程序文件内容到数组中**/
-bool infoInit(char resourceProj[numChar]){
+int infoInit(char resourceProj[numChar]){
     
     FILE *fp;
     int cur=0;
     
     if ((fp=fopen("/Users/zhaoxu/Hej.java", "r"))==NULL) {
         printf("无法打开文件\n");
-        return false;
+        return 0;
     }
     
     //初始化数组
@@ -150,21 +93,61 @@ bool infoInit(char resourceProj[numChar]){
     }
     resourceProj[++cur]='\0';
     
-    return true;
+    return cur;
+}
+
+/*编译预处理**/
+void filterPro(char ch[],int lenResource)
+{
+    char temString[numChar];
+    int count=0;
+    
+    for (int i=0; i<=lenResource; i++) {
+//        单行注释'//'，去除注释后面的东西，直到换行
+        if (ch[i] =='/' && ch[i+1]=='/') {
+            while (ch[i]!='\n') {
+                i++;
+            }
+        }
+        if (ch[i]=='/'&&ch[i+1]=='*') {
+//         多行注释'/*'，去除注释后面的东西，直到遇到'*/'
+            i += 2;
+            while (ch[i]!='*'||ch[i+1]!='/') {
+                i++;
+            }
+            i += 2;
+            
+        }
+        if (ch[i] !='\n' && ch[i]!='\t' && ch[i]!='\r') {
+//            过滤掉无用字符，存到数组中
+            temString[count++]=ch[i];
+        }
+    }
+    
+    temString[count] ='\0';
+    strcpy(ch, temString);
 }
 
 int main(int argc, const char * argv[]) {
     
     char resourceProj[numChar];
-    int i=0;
+    int i=0,j=0;
+    int lenResource=0;
     
-    infoInit(resourceProj);
+    lenResource=infoInit(resourceProj);
    
     //测试读取到的内容
     while (resourceProj[i]!='\0') {
         printf("%c ",resourceProj[i]);
         i++;
     }
-    
+    printf("\n");
+    filterPro(resourceProj, lenResource);
+    while (resourceProj[j]!='\0') {
+        printf("%c ",resourceProj[j]);
+        j++;
+    }
+    printf("\n");
+
     return 0;
 }
