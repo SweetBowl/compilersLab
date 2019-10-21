@@ -37,6 +37,8 @@ using namespace std;
  种别码为99
  6.标识符
  种别码为100
+ 7.特殊的@
+ 种别码为101
  */
 char keyword[50][13]={"abstract","assert","boolean","break","byte","case","catch","char",
     "class","const","continue","default","do","double","else","enum","extends","final",
@@ -170,6 +172,16 @@ bool checkLetter(char resourceProj[],char token[],int &cur,int &count,int &syn){
 //            此单词为标识符
             syn =liberSyn;
         }
+    }
+    else if(resourceProj[cur]=='@'){
+        token[count++]=resourceProj[cur];
+        cur++;
+        while (resourceProj[cur] != ' '&& resourceProj[cur] !='\n') {
+            token[count++]=resourceProj[cur];
+            cur++;
+        }
+        token[count]='\0';
+        syn=101;
     }
     return syn;
 }
