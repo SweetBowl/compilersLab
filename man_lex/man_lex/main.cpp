@@ -19,6 +19,8 @@
 #define numbino 22
 #define constSyn 99
 #define liberSyn 100
+#define lenToken 20
+#define numID 1000
 
 using namespace std;
 
@@ -49,6 +51,8 @@ const char speOperator[12]={'=','<','>','+','-','!','*','%','/','&','|','^'};
 
 const char binocularOperator[22][5]={"==","<=","<<=","<<",">=",">>",">>>",">>=",">>>=","+=","++","--","-=","!=","*=",
     "%=","/=","&=","&&","|=","||","^=",};
+
+static char identifierTb[numID][30]={""};        //标识符表
 
 FILE* fileSource=NULL;
 
@@ -86,7 +90,7 @@ int searchKey(char keyword[][13],char s[])
             return i+1;                 //成功查找返回种别码
         }
     }
-    return -1;                          //查找不成功返回-1
+    return 0;                          //查找不成功返回0
 }
 
 /**读取程序文件内容到数组中*/
@@ -149,8 +153,8 @@ void filterPro(char ch[],int lenResource)
 }
 
 /**判断是否为标识符或关键字*/
-int checkLetter(char resourceProj[],char token[],int &cur,int &count){
-    int syn = -1;
+bool checkLetter(char resourceProj[],char token[],int &cur,int &count,int &syn){
+    syn = 0;
     if (isLetter(resourceProj[cur])|| resourceProj[cur] =='_' || resourceProj[cur]=='$') {
         token[count++] = resourceProj[cur];
         cur++;
@@ -162,7 +166,7 @@ int checkLetter(char resourceProj[],char token[],int &cur,int &count){
         token[count]='\0';
 //        判断是否为关键字
         syn = searchKey(keyword, token);
-        if (syn == -1) {
+        if (syn == 0) {
 //            此单词为标识符
             syn =liberSyn;
         }
@@ -171,27 +175,27 @@ int checkLetter(char resourceProj[],char token[],int &cur,int &count){
 }
 
 /**判断是否为常数*/
-int checkDigit(char resourceProj[],char token[],int &cur,int &count){
-    int syn;
+bool checkDigit(char resourceProj[],char token[],int &cur,int &count,int &syn){
+    syn=0;
     if (isDigit(resourceProj[cur])) {
             while (isDigit(resourceProj[cur])) {
             token[count++] = resourceProj[cur];
             cur++;
         }
+        token[count]='\0';
+        syn = constSyn;
     }
-    token[count]='\0';
-    syn = constSyn;
     return syn;
 }
 
 /**判断不是某bino的prefix的单目符*/
 //const char monoOperator[14]={'(',')','[',']','{','}',';',',','.','!','?',':','^','~'};
-int checkMono(char resourceProj[],char token[],int &cur,char ch){
-    int syn = -1;
+bool checkMono(char resourceProj[],char token[],int &cur,char ch,int &syn){
+    syn = 0;
     if (ch =='('||ch==')'||ch=='['||ch==']'||ch=='{'||ch=='}'||ch==';'||ch==','||ch=='.'||ch=='!'
         ||ch=='?'||ch==':'||ch=='^'||ch=='~') {
         token[0] = resourceProj[cur];
-        token[1] = resourceProj[cur];
+        token[1] = '\0';
         for (int i=0; i<nummono; i++) {
             if (resourceProj[cur] == monoOperator[i]) {
                 syn = numKey+1+i;
@@ -210,8 +214,8 @@ int checkMono(char resourceProj[],char token[],int &cur,char ch){
 //const char speOperator[12]={'=','<','>','+','-','!','*','%','/','&','|','^'};
 //const char binocularOperator[22][5]={"==","<=","<<","<<=",">=",">>",">>>",">>=",">>>=","+=","++","--","-=","!=","*=",
 //"%=","/=","&=","&&","|=","||","^=",};
-int checkBino(char resourceProj[],int &cur){
-    int syn=-1;
+bool checkBino(char resourceProj[],int &cur,int &syn){
+    syn=0;
     if (resourceProj[cur] == '=') {
         //判断是否为 = 或者 ==
         cur++;      //超前搜索
@@ -408,17 +412,59 @@ int checkBino(char resourceProj[],int &cur){
         cur++;
         return syn;
     }
-    //上述条件都没有退出本函数时，返回-1
+    //上述条件都没有退出本函数时，返回0
     return syn;
 }
 
 /**完整的词法分析主体*/
+void lexer(int &syn,char resourceProj[],char token[],int &cur,FILE *fp){
+    int i,count = 0;
+    int a=0;
+    char ch;
+    ch = resourceProj[cur];
+    while (ch == ' ') {
+//        过滤空格
+        cur++;
+        ch = resourceProj[cur];
+    }
+//        数组初始化
+    for (i =0; i<lenToken; i++) {
+        token[i] = '\0';
+    }
+    if (checkLetter(resourceProj, token, cur, count, a)) {
+        syn  = a;
+    }
+    else if (checkDigit(resourceProj, token, cur, count, a)) {
+        syn = a;
+    }
+    else if(checkMono(resourceProj, token, cur, ch, a)){
+        syn =a;
+    }
+    else if(checkBino(resourceProj, cur, a)){
+        syn =a;
+    }
+    else if(feof(fp)){
+//        读到文件末尾
+        syn = -1;
+    }
+    else{
+//        若不能被以上词法分析识别，则出错
+        printf("Error：不存在%c\n",ch);
+        exit(0);
+    }
+}
 
 int main(int argc, const char * argv[]) {
     
     char resourceProj[numChar];
-    int i=0,j=0;
+    char token[lenToken]={0};
+    int i=0;                //用来指示当前位置
+    int j=0,k=0,m=0;                //用来测试输出结果
+    int syn=0;             //初始化种别码
     int lenResource=0;
+    
+    FILE *fp;
+    fp=fopen("/Users/zhaoxu/Hej.java", "r");
     
     lenResource=infoInit(resourceProj);
    
@@ -428,12 +474,52 @@ int main(int argc, const char * argv[]) {
         i++;
     }
     printf("\n");
+    
     filterPro(resourceProj, lenResource);
+    
+    //测试过滤后的内容
     while (resourceProj[j]!='\0') {
         printf("%c ",resourceProj[j]);
         j++;
     }
     printf("\n");
+    
+    printf("对程序文件进行词法分析\n");
+    i=0;                    //从头开始读
+    while (syn!=-1) {
+        lexer(syn, resourceProj, token, i, fp);
+//        识别为标识符
+        if (syn ==100) {
+            for (k=0; k<numID; k++) {
+//                标识符已在表格中
+                if (strcmp(identifierTb[k], token)==0) {
+                    break;
+                }
+            }
+            if (k==numID) {
+                for (m=0; m<numID; m++) {
+//                若不在表格中，寻找空位，并插入其中
+                    if (strcmp(identifierTb[k], "")==0) {
+                        strcpy(identifierTb[k], token);
+                        break;
+                    }
+                }
+            }
+            printf("<标识符100,%s>\n",token);
+        }
+//        识别为关键字
+        else if(syn>=1 && syn<=50){
+            printf("<%d,%s>\n",syn,keyword[syn-1]);
+        }
+        else if(syn ==99){
+            printf("<常数99,%s>\n",token);
+        }
+        else if(syn>=51 && syn<=96)
+        {
+            printf("<%d,%s>\n",syn,token);
+        }
+    }
+    fclose(fp);
 
     return 0;
 }

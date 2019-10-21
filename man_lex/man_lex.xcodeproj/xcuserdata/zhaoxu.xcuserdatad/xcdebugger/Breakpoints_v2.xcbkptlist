@@ -3,4 +3,23 @@
    uuid = "0889D24D-AD23-4F4A-B6EC-4102F7DCA6FB"
    type = "1"
    version = "2.0">
+   <Breakpoints>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "47AE0DE7-14E5-4F41-BE26-27E99916D970"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            condition = "syn==48"
+            continueAfterRunningActions = "No"
+            filePath = "man_lex/main.cpp"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "511"
+            endingLineNumber = "511"
+            landmarkName = "main(argc, argv)"
+            landmarkType = "9">
+         </BreakpointContent>
+      </BreakpointProxy>
+   </Breakpoints>
 </Bucket>
