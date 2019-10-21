@@ -6,7 +6,7 @@
 //  Copyright © 2019 Zhaox. All rights reserved.
 //
 
-#include <iostream>
+//#include <iostream>
 #include <stdio.h>
 #include <ctype.h>
 #include <string.h>
@@ -14,11 +14,11 @@
 
 #define numChar 10000
 #define numKey 50
-#define nummono 13
-#define numspe 16
+#define nummono 12
+#define numspe 12
 #define numbino 22
-#define constSyn 102
-#define liberSyn 103
+#define constSyn 99
+#define liberSyn 100
 
 using namespace std;
 
@@ -26,15 +26,15 @@ using namespace std;
  1.关键字
  种别码从1开始，依次往后顺延至50
  2.非prefix的单目符
- 种别码从51开始，依次往后顺延至63
+ 种别码从51开始，依次往后顺延至62
  3.特殊单目符
- 种别码从64开始编号，依次往后顺延至79
+ 种别码从63开始编号，依次往后顺延至74
  4.多目符
- 种别码从80开始编号，依次往后顺延至101
+ 种别码从75开始编号，依次往后顺延至96
  5.常数
- 种别码为102
+ 种别码为99
  6.标识符
- 种别码为103
+ 种别码为100
  */
 char keyword[50][13]={"abstract","assert","boolean","break","byte","case","catch","char",
     "class","const","continue","default","do","double","else","enum","extends","final",
@@ -43,9 +43,9 @@ char keyword[50][13]={"abstract","assert","boolean","break","byte","case","catch
     "strictfp","super","switch","synchronized","this","throw","throws","transient","try",
     "void","volatile","while"};
 
-const char monoOperator[13]={'(',')','[',']','{','}',';',',','.','?',':','^','~'};
+const char monoOperator[12]={'(',')','[',']','{','}',';',',','.','?',':','~'};
 
-const char speOperator[16]={'=','<','>','+','-','!','*','%','/','&','|','^'};
+const char speOperator[12]={'=','<','>','+','-','!','*','%','/','&','|','^'};
 
 const char binocularOperator[22][5]={"==","<=","<<=","<<",">=",">>",">>>",">>=",">>>=","+=","++","--","-=","!=","*=",
     "%=","/=","&=","&&","|=","||","^=",};
@@ -204,10 +204,10 @@ int checkMono(char resourceProj[],char token[],int &cur,char ch){
 }
 
 /**判断是否为多目符或是prefix的单目符*/
-//种别码：特殊的单目符从64开始编号，依次往后顺延至79
-//种别码：多目符从80开始编号，依次往后顺延至101
+//种别码：特殊的单目符从63开始编号，依次往后顺延至74
+//种别码：多目符从75开始编号，依次往后顺延至96
 
-//const char speOperator[16]={'=','<','>','+','-','!','*','%','/','&','|','^'};
+//const char speOperator[12]={'=','<','>','+','-','!','*','%','/','&','|','^'};
 //const char binocularOperator[22][5]={"==","<=","<<","<<=",">=",">>",">>>",">>=",">>>=","+=","++","--","-=","!=","*=",
 //"%=","/=","&=","&&","|=","||","^=",};
 int checkBino(char resourceProj[],int &cur){
@@ -216,11 +216,11 @@ int checkBino(char resourceProj[],int &cur){
         //判断是否为 = 或者 ==
         cur++;      //超前搜索
         if (resourceProj[cur]=='=') {
-            syn = 80;
+            syn = 75;
         }
         else{
             cur--;  //回退
-            syn =64;
+            syn =63;
         }
         cur++;
         return syn;
@@ -229,23 +229,23 @@ int checkBino(char resourceProj[],int &cur){
         //判断是否为< 或者 <= 或者 << 或者 <<=
         cur++;
         if (resourceProj[cur]=='=') {
-            syn =81;
+            syn =76;
         }
         else if(resourceProj[cur] =='<'){
             cur++;
             if (resourceProj[cur]=='=') {
-                syn=83;
+                syn=78;
             }
             else
             {
                 cur--;
-                syn=82;
+                syn=77;
             }
         }
         else
         {
             cur--;
-            syn = 65;
+            syn = 64;
         }
         cur++;
         return syn;
@@ -254,7 +254,7 @@ int checkBino(char resourceProj[],int &cur){
         //>, >=, >>, >>=, >>>, >>>=
         cur++;
         if (resourceProj[cur]=='=') {
-            syn=84;
+            syn=79;
         }
         else if(resourceProj[cur]=='>')
         {
@@ -262,28 +262,28 @@ int checkBino(char resourceProj[],int &cur){
             if (resourceProj[cur]=='>') {
                 cur++;
                 if (resourceProj[cur]=='=') {
-                    syn=88;
+                    syn=83;
                 }
                 else
                 {
                     cur--;
-                    syn=86;
+                    syn=81;
                 }
             }
             else if(resourceProj[cur]=='=')
             {
-                syn=87;
+                syn=82;
             }
             else
             {
                 cur--;
-                syn=85;
+                syn=80;
             }
         }
         else
         {
             cur--;
-            syn=66;
+            syn=65;
         }
         cur++;
         return syn;
@@ -291,10 +291,25 @@ int checkBino(char resourceProj[],int &cur){
     else if(resourceProj[cur]=='+'){
         cur++;
         if (resourceProj[cur]=='=') {
-            syn=89;
+            syn=84;
         }
         else if(resourceProj[cur]== '+'){
-            syn = 90;
+            syn = 85;
+        }
+        else{
+            cur--;
+            syn=66;
+        }
+        cur++;
+        return syn;
+    }
+    else if(resourceProj[cur]=='-'){
+        cur++;
+        if (resourceProj[cur]=='=') {
+            syn=87;
+        }
+        else if(resourceProj[cur]=='-'){
+            syn=96;
         }
         else{
             cur--;
@@ -303,7 +318,101 @@ int checkBino(char resourceProj[],int &cur){
         cur++;
         return syn;
     }
+    else if(resourceProj[cur]=='!'){
+        cur++;
+        if (resourceProj[cur]=='=') {
+            syn=88;
+        }
+        else{
+            cur--;
+            syn=68;
+        }
+        cur++;
+        return syn;
+    }
+    else if(resourceProj[cur]=='*'){
+        cur++;
+        if (resourceProj[cur]=='=') {
+            syn=89;
+        }
+        else{
+            cur--;
+            syn=69;
+        }
+        cur++;
+        return syn;
+    }
+    else if(resourceProj[cur]=='%'){
+        cur++;
+        if (resourceProj[cur]=='=') {
+            syn=90;
+        }
+        else{
+            cur--;
+            syn=70;
+        }
+        cur++;
+        return syn;
+    }
+    else if(resourceProj[cur]=='/'){
+        cur++;
+        if (resourceProj[cur]=='=') {
+            syn=91;
+        }
+        else{
+            cur--;
+            syn=71;
+        }
+        cur++;
+        return syn;
+    }
+    else if(resourceProj[cur]=='&'){
+        cur++;
+        if (resourceProj[cur]=='=') {
+            syn=92;
+        }
+        else if(resourceProj[cur]=='&'){
+            syn=93;
+        }
+        else{
+            cur--;
+            syn=72;
+        }
+        cur++;
+        return syn;
+    }
+    else if(resourceProj[cur]=='|'){
+        cur++;
+        if (resourceProj[cur]=='=') {
+            syn=94;
+        }
+        else if(resourceProj[cur]=='|'){
+            syn=95;
+        }
+        else{
+            cur--;
+            syn=73;
+        }
+        cur++;
+        return syn;
+    }
+    else if(resourceProj[cur]=='^'){
+        cur++;
+        if (resourceProj[cur]=='=') {
+            syn=96;
+        }
+        else{
+            cur--;
+            syn=74;
+        }
+        cur++;
+        return syn;
+    }
+    //上述条件都没有退出本函数时，返回-1
+    return syn;
 }
+
+/**完整的词法分析主体*/
 
 int main(int argc, const char * argv[]) {
     
