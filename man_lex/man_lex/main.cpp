@@ -14,12 +14,12 @@
 
 #define numChar 10000
 #define numKey 50
-#define nummono 14
+#define nummono 13
 #define numspe 12
 #define numbino 22
-#define constSyn 99
-#define liberSyn 100
-#define lenToken 25
+#define constSyn 98
+#define liberSyn 99
+#define lenToken 50
 #define numID 1000
 
 using namespace std;
@@ -28,17 +28,20 @@ using namespace std;
  1.关键字
  种别码从1开始，依次往后顺延至50
  2.非prefix的单目符
- 种别码从51开始，依次往后顺延至64
- 3.特殊单目符
- 种别码从65开始编号，依次往后顺延至76
+ 种别码从51开始，依次往后顺延至63
+ 3.特殊单目
+ 种别码从64开始编号，依次往后顺延至75
  4.多目符
- 种别码从77开始编号，依次往后顺延至98
+ 种别码从76开始编号，依次往后顺延至97
  5.常数
- 种别码为99
+ 种别码为98
  6.标识符
- 种别码为100
+ 种别码为99
  7.特殊的@
+ 种别码为100
+ 8.字符串
  种别码为101
+ 
  */
 char keyword[50][13]={"abstract","assert","boolean","break","byte","case","catch","char",
     "class","const","continue","default","do","double","else","enum","extends","final",
@@ -47,7 +50,7 @@ char keyword[50][13]={"abstract","assert","boolean","break","byte","case","catch
     "strictfp","super","switch","synchronized","this","throw","throws","transient","try",
     "void","volatile","while"};
 
-const char monoOperator[14]={'(',')','[',']','{','}',';',',','.','?',':','~','\"','\''};
+const char monoOperator[13]={'(',')','[',']','{','}',';',',','.','?',':','~','\''};
 
 const char speOperator[12]={'=','<','>','+','-','!','*','%','/','&','|','^'};
 
@@ -100,7 +103,8 @@ int infoInit(char resourceProj[numChar]){
     
     FILE *fp;
     int cur=0;
-    
+    ////Users/zhaoxu/Hej.java
+    ///Users/zhaoxu/Downloads/编译_lab1/test.java
     if ((fp=fopen("/Users/zhaoxu/Downloads/编译_lab1/test.java", "r"))==NULL) {
         printf("无法打开文件\n");
         return 0;
@@ -181,7 +185,7 @@ bool checkLetter(char resourceProj[],char token[],int &cur,int &count,int &syn){
             cur++;
         }
         token[count]='\0';
-        syn=101;
+        syn=100;
     }
     return syn;
 }
@@ -200,12 +204,12 @@ bool checkDigit(char resourceProj[],char token[],int &cur,int &count,int &syn){
     return syn;
 }
 
-/**判断不是某bino的prefix的单目符*/
+/**判断不是某bino的prefi x的单目符*/
 //const char monoOperator[14]={'(',')','[',']','{','}',';',',','.','?',':','~','\"','\''};
 bool checkMono(char resourceProj[],char token[],int &cur,char ch,int &syn){
     syn = 0;
     if (ch =='('||ch==')'||ch=='['||ch==']'||ch=='{'||ch=='}'||ch==';'||ch==','||ch=='.'||ch=='!'
-        ||ch=='?'||ch==':'||ch=='^'||ch=='~'||ch=='\"'||ch=='\'') {
+        ||ch=='?'||ch==':'||ch=='^'||ch=='~'||ch=='\'') {
         token[0] = resourceProj[cur];
         token[1] = '\0';
         for (int i=0; i<nummono; i++) {
@@ -226,91 +230,131 @@ bool checkMono(char resourceProj[],char token[],int &cur,char ch,int &syn){
 //const char speOperator[12]={'=','<','>','+','-','!','*','%','/','&','|','^'};
 //const char binocularOperator[22][5]={"==","<=","<<","<<=",">=",">>",">>>",">>=",">>>=","+=","++","--","-=","!=","*=",
 //"%=","/=","&=","&&","|=","||","^=",};
-bool checkBino(char resourceProj[],int &cur,int &syn){
+bool checkBino(char resourceProj[],char token[],int &cur,int &syn){
     syn=0;
+    int i=0;
     if (resourceProj[cur] == '=') {
         //判断是否为 = 或者 ==
+        token[i]=resourceProj[cur];
         cur++;      //超前搜索
+        i++;
         if (resourceProj[cur]=='=') {
-            syn = 77;
+            syn = 76;
+            token[i]=resourceProj[cur];
         }
         else{
             cur--;  //回退
-            syn =65;
+            syn =64;
         }
         cur++;
         return syn;
     }
     else if (resourceProj[cur]=='<') {
         //判断是否为< 或者 <= 或者 << 或者 <<=
+        token[i]=resourceProj[cur];
         cur++;
+        i++;
         if (resourceProj[cur]=='=') {
-            syn =78;
+            syn =77;
+            token[i]=resourceProj[cur];
         }
         else if(resourceProj[cur] =='<'){
+            token[i]=resourceProj[cur];
             cur++;
+            i++;
             if (resourceProj[cur]=='=') {
-                syn=80;
+                token[i]=resourceProj[cur];
+                syn=79;
             }
             else
             {
                 cur--;
-                syn=79;
+                syn=78;
             }
         }
         else
         {
             cur--;
-            syn = 66;
+            syn = 65;
         }
         cur++;
         return syn;
     }
     else if(resourceProj[cur]=='>'){
         //>, >=, >>, >>=, >>>, >>>=
+        token[i]=resourceProj[cur];
         cur++;
+        i++;
         if (resourceProj[cur]=='=') {
-            syn=81;
+            token[i]=resourceProj[cur];
+            syn=80;
         }
         else if(resourceProj[cur]=='>')
         {
+            token[i]=resourceProj[cur];
             cur++;
+            i++;
             if (resourceProj[cur]=='>') {
+                token[i]=resourceProj[cur];
                 cur++;
+                i++;
                 if (resourceProj[cur]=='=') {
-                    syn=85;
+                    syn=84;
                 }
                 else
                 {
                     cur--;
-                    syn=83;
+                    syn=82;
                 }
             }
             else if(resourceProj[cur]=='=')
             {
-                syn=84;
+                syn=83;
             }
             else
             {
                 cur--;
-                syn=82;
+                syn=81;
             }
         }
         else
         {
+            cur--;
+            syn=66;
+        }
+        cur++;
+        return syn;
+    }
+    else if(resourceProj[cur]=='+'){
+        token[i]=resourceProj[cur];
+        cur++;
+        i++;
+        if (resourceProj[cur]=='=') {
+            token[i]=resourceProj[cur];
+            syn=85;
+        }
+        else if(resourceProj[cur]== '+'){
+            token[i]=resourceProj[cur];
+            syn = 86;
+        }
+        else{
             cur--;
             syn=67;
         }
         cur++;
         return syn;
     }
-    else if(resourceProj[cur]=='+'){
+    else if(resourceProj[cur]=='-'){
+        token[i]=resourceProj[cur];
         cur++;
+        i++;
         if (resourceProj[cur]=='=') {
-            syn=86;
+            token[i]=resourceProj[cur];
+            syn=88;
         }
-        else if(resourceProj[cur]== '+'){
-            syn = 87;
+        else if(resourceProj[cur]=='-'){
+            token[i]=resourceProj[cur];
+            syn=97;
         }
         else{
             cur--;
@@ -319,13 +363,13 @@ bool checkBino(char resourceProj[],int &cur,int &syn){
         cur++;
         return syn;
     }
-    else if(resourceProj[cur]=='-'){
+    else if(resourceProj[cur]=='!'){
+        token[i]=resourceProj[cur];
         cur++;
+        i++;
         if (resourceProj[cur]=='=') {
+            token[i]=resourceProj[cur];
             syn=89;
-        }
-        else if(resourceProj[cur]=='-'){
-            syn=98;
         }
         else{
             cur--;
@@ -334,9 +378,12 @@ bool checkBino(char resourceProj[],int &cur,int &syn){
         cur++;
         return syn;
     }
-    else if(resourceProj[cur]=='!'){
+    else if(resourceProj[cur]=='*'){
+        token[i]=resourceProj[cur];
         cur++;
+        i++;
         if (resourceProj[cur]=='=') {
+            token[i]=resourceProj[cur];
             syn=90;
         }
         else{
@@ -346,9 +393,12 @@ bool checkBino(char resourceProj[],int &cur,int &syn){
         cur++;
         return syn;
     }
-    else if(resourceProj[cur]=='*'){
+    else if(resourceProj[cur]=='%'){
+        token[i]=resourceProj[cur];
         cur++;
+        i++;
         if (resourceProj[cur]=='=') {
+            token[i]=resourceProj[cur];
             syn=91;
         }
         else{
@@ -358,9 +408,12 @@ bool checkBino(char resourceProj[],int &cur,int &syn){
         cur++;
         return syn;
     }
-    else if(resourceProj[cur]=='%'){
+    else if(resourceProj[cur]=='/'){
+        token[i]=resourceProj[cur];
         cur++;
+        i++;
         if (resourceProj[cur]=='=') {
+            token[i]=resourceProj[cur];
             syn=92;
         }
         else{
@@ -370,10 +423,17 @@ bool checkBino(char resourceProj[],int &cur,int &syn){
         cur++;
         return syn;
     }
-    else if(resourceProj[cur]=='/'){
+    else if(resourceProj[cur]=='&'){
+        token[i]=resourceProj[cur];
         cur++;
+        i++;
         if (resourceProj[cur]=='=') {
+            token[i]=resourceProj[cur];
             syn=93;
+        }
+        else if(resourceProj[cur]=='&'){
+            token[i]=resourceProj[cur];
+            syn=94;
         }
         else{
             cur--;
@@ -382,13 +442,17 @@ bool checkBino(char resourceProj[],int &cur,int &syn){
         cur++;
         return syn;
     }
-    else if(resourceProj[cur]=='&'){
+    else if(resourceProj[cur]=='|'){
+        token[i]=resourceProj[cur];
         cur++;
+        i++;
         if (resourceProj[cur]=='=') {
-            syn=94;
-        }
-        else if(resourceProj[cur]=='&'){
+            token[i]=resourceProj[cur];
             syn=95;
+        }
+        else if(resourceProj[cur]=='|'){
+            token[i]=resourceProj[cur];
+            syn=96;
         }
         else{
             cur--;
@@ -397,12 +461,12 @@ bool checkBino(char resourceProj[],int &cur,int &syn){
         cur++;
         return syn;
     }
-    else if(resourceProj[cur]=='|'){
+    else if(resourceProj[cur]=='^'){
+        token[i]=resourceProj[cur];
         cur++;
+        i++;
         if (resourceProj[cur]=='=') {
-            syn=96;
-        }
-        else if(resourceProj[cur]=='|'){
+            token[i]=resourceProj[cur];
             syn=97;
         }
         else{
@@ -412,19 +476,29 @@ bool checkBino(char resourceProj[],int &cur,int &syn){
         cur++;
         return syn;
     }
-    else if(resourceProj[cur]=='^'){
-        cur++;
-        if (resourceProj[cur]=='=') {
-            syn=98;
-        }
-        else{
-            cur--;
-            syn=76;
-        }
-        cur++;
-        return syn;
-    }
     //上述条件都没有退出本函数时，返回0
+    return syn;
+}
+
+/**判断是否为字符串*/
+bool checkString(char resourceProj[],int &cur,char tmps[],int &syn){
+    syn=0;
+    int j=0;
+    
+    if (resourceProj[cur]=='\"') {
+        tmps[j]=resourceProj[cur];
+        cur++;
+        j++;
+        
+        while (resourceProj[cur] != '\"') {
+            tmps[j]=resourceProj[cur];
+            cur++;
+            j++;
+        }
+        tmps[j]=resourceProj[cur];
+        syn=101;
+        cur++;
+    }
     return syn;
 }
 
@@ -445,6 +519,7 @@ void lexer(int &syn,char resourceProj[],char token[],int &cur,FILE *fp){
     for (i =0; i<lenToken; i++) {
         token[i] = '\0';
     }
+    
     if (checkLetter(resourceProj, token, cur, count, a)) {
         syn  = a;
     }
@@ -454,8 +529,11 @@ void lexer(int &syn,char resourceProj[],char token[],int &cur,FILE *fp){
     else if(checkMono(resourceProj, token, cur, ch, a)){
         syn =a;
     }
-    else if(checkBino(resourceProj, cur, a)){
+    else if(checkBino(resourceProj,token,cur, a)){
         syn =a;
+    }
+    else if(checkString(resourceProj, cur, token,a)){
+        syn=a;
     }
     else if(feof(fp)){
 //        读到文件末尾
@@ -478,6 +556,8 @@ int main(int argc, const char * argv[]) {
     int lenResource=0;
     
     FILE *fp;
+    //Users/zhaoxu/Hej.java
+    ///Users/zhaoxu/Downloads/编译_lab1/test.java
     fp=fopen("/Users/zhaoxu/Downloads/编译_lab1/test.java", "r");
     
     lenResource=infoInit(resourceProj);
@@ -503,7 +583,7 @@ int main(int argc, const char * argv[]) {
     while (syn!=-1) {
         lexer(syn, resourceProj, token, i, fp);
 //        识别为标识符
-        if (syn ==100) {
+        if (syn ==99) {
             for (k=0; k<numID; k++) {
 //                标识符已在表格中
                 if (strcmp(identifierTb[k], token)==0) {
@@ -519,22 +599,26 @@ int main(int argc, const char * argv[]) {
                     }
                 }
             }
-            printf("<标识符100,%s>\n",token);
+            printf("<标识符99, %s>\n",token);
         }
 //        识别为关键字
         else if(syn>=1 && syn<=50){
-            printf("<%d,%s>\n",syn,keyword[syn-1]);
+            printf("<%d, %s>\n",syn,keyword[syn-1]);
         }
-        else if(syn ==99){
-            printf("<常数99,%s>\n",token);
+        else if(syn ==98){
+            printf("<常数98, %s>\n",token);
         }
-        else if(syn>=51 && syn<=98)
+        else if(syn>=51 && syn<=97)
         {
-            printf("<%d,%s>\n",syn,token);
+            printf("<%d, %s>\n",syn,token);
         }
-        else if(syn ==101)
+        else if(syn ==100)
         {
-            printf("<101,%s>\n",token);
+            printf("<100, %s>\n",token);
+        }
+        else if(syn==101)
+        {
+            printf("<字符串101, %s>\n",token);
         }
     }
     fclose(fp);
