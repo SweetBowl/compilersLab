@@ -227,9 +227,6 @@ bool checkMono(char resourceProj[],char token[],int &cur,char ch,int &syn){
 //种别码：特殊的单目符从65开始编号，依次往后顺延至76
 //种别码：多目符从77开始编号，依次往后顺延至98
 
-//const char speOperator[12]={'=','<','>','+','-','!','*','%','/','&','|','^'};
-//const char binocularOperator[22][5]={"==","<=","<<","<<=",">=",">>",">>>",">>=",">>>=","+=","++","--","-=","!=","*=",
-//"%=","/=","&=","&&","|=","||","^=",};
 bool checkBino(char resourceProj[],char token[],int &cur,int &syn){
     syn=0;
     int i=0;
@@ -561,22 +558,8 @@ int main(int argc, const char * argv[]) {
     fp=fopen("/Users/zhaoxu/Downloads/编译_lab1/test.java", "r");
     
     lenResource=infoInit(resourceProj);
-   
-    //测试读取到的内容
-    while (resourceProj[i]!='\0') {
-        printf("%c ",resourceProj[i]);
-        i++;
-    }
-    printf("\n");
     
     filterPro(resourceProj, lenResource);
-    
-    //测试过滤后的内容
-    while (resourceProj[j]!='\0') {
-        printf("%c ",resourceProj[j]);
-        j++;
-    }
-    printf("\n");
     
     printf("对程序文件进行词法分析\n");
     i=0;                    //从头开始读
