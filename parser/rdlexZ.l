@@ -1,7 +1,7 @@
 %{
 enum yytokentype{
 	NUMBER = 258,
-    ID = 269,
+    ID = 259,
     STRING = 260,
     VOID = 261,
     IF = 262,
